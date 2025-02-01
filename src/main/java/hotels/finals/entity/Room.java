@@ -26,7 +26,7 @@ public class Room {
   @ToString.Exclude
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "hotel_id", nullable = false)
-  private HotelName hotel;
+  private Hotel hotel;
   
 
 }

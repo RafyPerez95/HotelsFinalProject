@@ -6,115 +6,98 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
-import hotels.finals.controller.model.HotelsFinalData;
-import hotels.finals.controller.model.HotelsFinalData.RoomData;
+import hotels.finals.controller.model.HotelData;
+import hotels.finals.controller.model.HotelData.CustomerData;
+import hotels.finals.controller.model.HotelData.RoomData;
 import hotels.finals.dao.CustomerDao;
-import hotels.finals.dao.HotelNameDao;
+import hotels.finals.dao.HotelDao;
 import hotels.finals.dao.RoomDao;
-import hotels.finals.entity.HotelName;
+import hotels.finals.entity.Customer;
+import hotels.finals.entity.Hotel;
 import hotels.finals.entity.Room;
-@EntityScan
 
 @Service
 public class HotelsFinalService {
 
     @Autowired
-    private HotelNameDao hotelDao;
+    private HotelDao hotelDao;
 
     @Autowired
     private RoomDao roomDao;
 
     @Autowired
-    private CustomerDao userDao;
-
+    private CustomerDao customerDao;
 
     // Save or update hotel details
     @Transactional
-    public HotelsFinalData saveHotel(HotelsFinalData hotelFinalData) {
-        Long hotelId = hotelFinalData.getHotelId();
-       HotelName hotelName = findOrCreateHotel(hotelId);
+    public HotelData saveHotel(HotelData hotelData) {
+        Long hotelId = hotelData.getHotelId();
+        Hotel hotel = findOrCreateHotel(hotelId);
 
-        copyHotelFields(hotel, hotelFinalData);
-        return new HotelFinalData(hotelDao.save(hotel));
+        copyHotelFields(hotel, hotelData);
+        return new HotelData(hotelDao.save(hotel));
     }
 
-    private void copyHotelFields(HotelName hotel, HotelFinalData hotelFinalData) {
-        hotel.setName(hotelFinalData.getHotelName());
-        hotel.setAddress(hotelFinalData.getHotelAddress());
-        hotel.setState(hotelFinalData.getHotelState());
+    private void copyHotelFields(Hotel hotel, HotelData hotelData) {
+        hotel.setName(hotelData.getName());
+        hotel.setAddress(hotelData.getAddress());
+        hotel.setState(hotelData.getState());
     }
 
     // Save or update room details
     @Transactional
-    public HotelRoomData saveRoom(Long hotelId, HotelRoomData hotelRoomData) {
-        HotelName hotel = findHotelById(hotelId);
-        Long roomId = hotelRoomData.getRoomId();
-        Room room = findOrCreateRoom(roomId);
+    public RoomData saveRoom(Long hotelId, RoomData roomData) {
+        Hotel hotel = findHotelById(hotelId);
+        Long roomId = roomData.getRoomId();
+        Room room = findOrCreateRoom(roomId);       //THIS NEEDS TO INCLUDE HOTELID TO MATCH FINDORCREATEEMPLOYEE
 
-        copyRoomFields(room, hotelRoomData);
+        copyRoomFields(room, roomData);
         room.setHotel(hotel);
         hotel.getRooms().add(room);
 
         Room dbRoom = roomDao.save(room);
-        return new HotelRoomData(dbRoom);
+        return new RoomData(dbRoom);
     }
 
-    private void copyRoomFields(Room room, RoomData hotelRoomData) {
-        room.setRoomType(hotelRoomData.getRoomType());
-        room.setBedrooms(hotelRoomData.getBedrooms());
-        room.setView(hotelRoomData.getView());
+    private void copyRoomFields(Room room, RoomData roomData) {
+        room.setRoomType(roomData.getRoomType());
+        room.setBedrooms(roomData.getBedrooms());
+        room.setView(roomData.getView());
     }
 
-    // Save or update user details
+    // Save or update customer details
     @Transactional
-    public HotelUserData saveUser(Long hotelId, HotelUserData hotelUserData) {
-        HotelName hotel = findHotelById(hotelId);
-        Long userId = hotelUserData.getUserId();
-        User user = findOrCreateUser(userId);
-
-        copyUserFields(user, hotelUserData);
-        user.getHotels().add(hotel);
-        hotel.getUsers().add(user);
-
-        User dbUser = userDao.save(user);
-        return new HotelUserData(dbUser);
-    }
-
-    private void copyUserFields(User user, HotelUserData hotelUserData) {
-        user.setName(hotelUserData.getName());
-        user.setEmail(hotelUserData.getEmail());
-        user.setPassword(hotelUserData.getPassword());
-    }
-
-    // Save the relationship between hotel and user (hotel user mapping)
-    @Transactional
-    public HotelUser saveHotelUser(Long hotelId, Long userId) {
+    public CustomerData saveCustomer(Long hotelId, CustomerData customerData) {
         Hotel hotel = findHotelById(hotelId);
-        User user = findUserById(userId);
+        Long customerId = customerData.getCustomerId();
+        Customer customer = findOrCreateCustomer(customerId);   //THIS NEEDS TO INCLUDE HOTELID TO MATCH FINDORCREATECUSTOMER
 
-        HotelUser hotelUser = new HotelUser();
-        hotelUser.setHotel(hotel);
-        hotelUser.setUser(user);
+        copyCustomerFields(customer, customerData);
+        customer.getHotelNames().add(hotel);
+        hotel.getCustomers().add(customer);
 
-        hotelUser = hotelUserDao.save(hotelUser);
-        return hotelUser;
+        Customer dbCustomer = customerDao.save(customer);
+        return new CustomerData(dbCustomer);
+    }
+
+    private void copyCustomerFields(Customer customer, CustomerData customerData) {
+        customer.setCustomerName(customerData.getCustomerName());
+        customer.setCustomerEmail(customerData.getCustomerEmail());
+        customer.setPassword(customerData.getPassword());
     }
 
     // Retrieve all hotels
     @Transactional(readOnly = true)
-    public List<HotelsFinalData> retrieveAllHotels() {
+    public List<HotelData> retrieveAllHotels() {
         List<Hotel> hotels = hotelDao.findAll();
-        List<HotelsFinalData> result = new LinkedList<>();
+        List<HotelData> result = new LinkedList<>();
 
         for (Hotel hotel : hotels) {
-            HotelsFinalData hfd = new HotelsFinalData(hotel);
+            HotelData hfd = new HotelData(hotel);
             hfd.getRooms().clear();
-            hfd.getUsers().clear();
+            hfd.getHotelCustomers().clear();
 
             result.add(hfd);
         }
@@ -124,8 +107,8 @@ public class HotelsFinalService {
 
     // Retrieve a hotel by ID
     @Transactional(readOnly = true)
-    public HotelsFinalData retrieveHotelById(Long hotelId) {
-        return new HotelsFinalData(findHotelById(hotelId));
+    public HotelData retrieveHotelById(Long hotelId) {
+        return new HotelData(findHotelById(hotelId));
     }
 
     // Delete a hotel by ID
@@ -145,30 +128,30 @@ public class HotelsFinalService {
 
     private Hotel findHotelById(Long hotelId) {
         return hotelDao.findById(hotelId)
-            .orElseThrow(() -> new NoSuchElementException("Hotel with ID=" + hotelId + " was not found."));
+                .orElseThrow(() -> new NoSuchElementException("Hotel with ID=" + hotelId + " was not found."));
     }
 
-    private Room findOrCreateRoom(Long roomId) {
+    private Room findOrCreateRoom(Long roomId) {            //THIS NEEDS TO INCLUDE HOTELID TO MATCH FINDORCREATEEMPLOYEE
         if (Objects.isNull(roomId)) {
             return new Room();
         }
         return findRoomById(roomId);
     }
 
-    private Room findRoomById(Long roomId) {
+    private Room findRoomById(Long roomId) {      //THIS NEEDS TO INCLUDE HOTELID TO MATCH FINDEMPLOYEEBYID
         return roomDao.findById(roomId)
-            .orElseThrow(() -> new NoSuchElementException("Room with ID=" + roomId + " was not found."));
+                .orElseThrow(() -> new NoSuchElementException("Room with ID=" + roomId + " was not found."));
     }
 
-    private User findOrCreateUser(Long userId) {
-        if (Objects.isNull(userId)) {
-            return new User();
+    private Customer findOrCreateCustomer(Long customerId) {  //THIS NEEDS TO INCLUDE HOTELID TO MATCH FINDORCREATECUSTOMER
+        if (Objects.isNull(customerId)) {
+            return new Customer();
         }
-        return findUserById(userId);
+        return findCustomerById(customerId);
     }
 
-    private User findUserById(Long userId) {
-        return userDao.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with ID=" + userId + " was not found."));
+    private Customer findCustomerById(Long customerId) {   //THIS NEEDS TO INCLUDE HOTELID TO MATCH FINDCUSTOMERBYID
+        return customerDao.findById(customerId)
+                .orElseThrow(() -> new NoSuchElementException("Customer with ID=" + customerId + " was not found."));
     }
 }

@@ -6,12 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import hotels.finals.entity.Room;
 import hotels.finals.entity.Customer;
-import hotels.finals.entity.HotelName;
+import hotels.finals.entity.Hotel;
 
 
 @Data
 @NoArgsConstructor
-public class HotelsFinalData {
+public class HotelData {
 
     private Long hotelId;
     private String name; 
@@ -21,7 +21,7 @@ public class HotelsFinalData {
     private Set<CustomerData> hotelCustomers = new HashSet<>();  
 
     
-    public HotelsFinalData(HotelName hotel) {
+    public HotelData(Hotel hotel) {
         hotelId = hotel.getHotelId();
         name = hotel.getName();  
         address = hotel.getAddress();  
@@ -63,13 +63,13 @@ public class HotelsFinalData {
         private Long customerId;
         private String customerName;
         private String customerEmail;
-        private String customerPassword; 
+        private String password; 
 
         public CustomerData(Customer customer) {
             customerId = customer.getCustomerId();
-            customerName = customer.getName();             
-            customerEmail = customer.getEmail();
-            customerPassword = customer.getPassword(); 
+            customerName = customer.getCustomerName();             
+            customerEmail = customer.getCustomerEmail();
+            password = customer.getPassword(); 
         }
     }
 }

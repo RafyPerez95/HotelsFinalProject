@@ -20,14 +20,14 @@ public class Customer {
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long CustomerId;
 
-private String name;
-private String email;
+private String customerName;
+private String customerEmail;
 private String password;
 @EqualsAndHashCode.Exclude
 @ToString.Exclude
 @ManyToMany(mappedBy = "customers", cascade = CascadeType.ALL)
 
 
-private Set<HotelName> hotelNames = new HashSet<>();
+private Set<Hotel> hotelNames = new HashSet<>();
 
 }

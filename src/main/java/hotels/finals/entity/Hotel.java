@@ -20,7 +20,7 @@ import lombok.ToString;
 @Data
 
 @Entity
-public class HotelName {
+public class Hotel {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long hotelId;
@@ -35,7 +35,7 @@ public class HotelName {
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
   @ManyToMany(cascade = CascadeType.PERSIST)
-  @JoinTable(name = "hotel_name_customer",
+  @JoinTable(name = "hotel_customer",
   joinColumns = @JoinColumn(name = "hotel_id"),
   inverseJoinColumns = @JoinColumn(name = "customer_id"))
   

@@ -6,9 +6,7 @@ spring:
     
   jpa:
     hibernate:
-      ddl-auto:
+      ddl-auto: create
     show-sql: true
     
-    sql:
-      init:
-        mode: always
+    
